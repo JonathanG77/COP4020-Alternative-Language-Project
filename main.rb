@@ -136,6 +136,10 @@ class Cell
     def setPlatformOS=(platformOS)
         @platformOS = platformOS
     end
+
+    # Method to sanitize the data for input into HashMap
+    def sanitizeData()
+    end
     
 end
 
@@ -145,7 +149,14 @@ else
     cellInfo = CSV.parse(File.read('cells.csv'), headers: true)
 end
 
+Cells = {}
+
+
 cellInfo.each_with_index do |row, i|
     tempCell = Cell.new(row['oem'], row['model'], row['launch_announced'], row['launch_status'], row['body_dimensions'], row['body_weight'], row['body_sim'], row['display_type'], row['display_size'], row['display_resolution'], row['features_sensors'], row['platform_os'])
+    tempCell.sanitizeData
+    Cells[:Index] = i
+    Cells.store(i, tempCell)
 end
 
+puts Cells
