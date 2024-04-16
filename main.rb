@@ -1,4 +1,6 @@
 require 'csv'
+require 'active_support'
+require 'active_support/core_ext/object'
 
 class Cell
 
@@ -133,14 +135,72 @@ class Cell
     end
 
     # Setter method for platform OS variable
-    def setPlatformOS=(platformOS)
-        @platformOS = platformOS
+    def setPlatformOS=(platformOs)
+        @platformOs = platformOs
     end
 
     # Method to sanitize the data for input into HashMap
     def sanitizeData()
+        if @oem.blank?
+            @oem = nil
+        end
+
+        if @model.blank?
+            @model = nil
+        end
+
+        if /(\d{4})/.match?(@launchAnnounced)
+            @launchAnnounced = @launchAnnounced[/(\d{4})/].to_i
+        else
+            @launch_announced = nil
+        end
+        
+        if /(\d{4})/.match?(@launchStatus)
+            @launchStatus = @launchStatus[/(\d{4})/].to_i
+        elsif @launchStatus.eql?('Discontinued') || @launchStatus.eql?('Cancelled')
+            @launchStatus = @launchStatus
+        else
+            @launch_announced = nil
+        end
+
+        if @bodyDimensions.blank?
+            @bodyDimensions = nil
+        end
+
+        if /(\d+ [g])/.match?(@bodyWeight)
+            @bodyWeight = @bodyWeight[/(\d+ [g])/].to_f
+        else
+            @bodyWeight = nil
+        end
+
+        if @bodySim.blank? || @bodySim.eql?('No') || @bodySim.eql?('Yes')
+            @bodySim = nil
+        end
+
+        if @displayType.blank?
+            @displayType = nil
+        end
+
+        if /(\d*+\.?\d* \binches\b)/.match?(@displaySize)
+            @displaySize = @displaySize[/(\d+\.\d+ \binches\b)/].to_f
+        else
+            @displaySize = nil
+        end
+
+        if @displayResolution.blank?
+            @displayResolution = nil
+        end
+
+        if @featuresSensors.blank? || /(^[0-9.]+$)/.match?(@featuresSensors)
+            @featuresSensors = nil
+        end
+
+        if /(^\d*+\.?\d*$)/.match?(@platformOs) || @platformOs.blank?
+            @platformOs = nil
+        else
+            @platformOs = @platformOs[/([^,])+/]
+        end
     end
-    
 end
 
 if File.zero?('cells.csv')
@@ -151,12 +211,13 @@ end
 
 Cells = {}
 
+# Iterate through the CSV Table structure to sanitize data and put into hashmap
 
 cellInfo.each_with_index do |row, i|
     tempCell = Cell.new(row['oem'], row['model'], row['launch_announced'], row['launch_status'], row['body_dimensions'], row['body_weight'], row['body_sim'], row['display_type'], row['display_size'], row['display_resolution'], row['features_sensors'], row['platform_os'])
     tempCell.sanitizeData
-    Cells[:Index] = i
+    Cells[i] = i 
     Cells.store(i, tempCell)
 end
 
-puts Cells
+
