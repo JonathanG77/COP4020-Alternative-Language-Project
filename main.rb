@@ -145,5 +145,7 @@ else
     cellInfo = CSV.parse(File.read('cells.csv'), headers: true)
 end
 
-puts cellInfo
+cellInfo.each_with_index do |row, i|
+    tempCell = Cell.new(row['oem'], row['model'], row['launch_announced'], row['launch_status'], row['body_dimensions'], row['body_weight'], row['body_sim'], row['display_type'], row['display_size'], row['display_resolution'], row['features_sensors'], row['platform_os'])
+end
 
