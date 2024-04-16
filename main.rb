@@ -201,6 +201,26 @@ class Cell
             @platformOs = @platformOs[/([^,])+/]
         end
     end
+
+    def self.findHighestAverage(cellHash)
+
+    end
+
+    def self.findDifferentYear(cellHash)
+        cellHash.each_key do |i|
+            if cellHash[i].getLaunchAnnounced != cellHash[i].getLaunchStatus && (cellHash[i].getLaunchAnnounced != nil && cellHash[i].getLaunchStatus != nil) && !(cellHash[i].getLaunchStatus.is_a?(String))
+                puts "OEM: " + cellHash[i].getOEM + ", Model: " + cellHash[i].getModel
+            end
+        end
+    end
+
+    def self.findSingleFeature(cellHash)
+
+    end
+
+    def self.findMostLaunchedYear(cellHash)
+
+    end
 end
 
 if File.zero?('cells.csv')
@@ -220,4 +240,4 @@ cellInfo.each_with_index do |row, i|
     Cells.store(i, tempCell)
 end
 
-
+Cell.findDifferentYear(Cells)
