@@ -241,7 +241,10 @@ class Cell
                 end
             end
         end
-        puts tempHash
+        tempHash = tempHash.sort.to_h
+        tempHash.each_key do |i|
+            puts "Number of phones released in #{i} " + ": #{tempHash[i]}"
+        end
     end
 end
 
