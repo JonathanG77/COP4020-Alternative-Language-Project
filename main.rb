@@ -148,13 +148,14 @@ class Cell
         if @model.blank?
             @model = nil
         end
-
+        # Use a regex expression to check if the announced launch date string contains a year in it. This expression matches 4 digits anywhere in the string
         if /(\d{4})/.match?(@launchAnnounced)
             @launchAnnounced = @launchAnnounced[/(\d{4})/].to_i
         else
             @launchAnnounced = nil
         end
-        
+        # Use a regex expression to check if the released launch date string contains a year in it. This expression matches 4 digits anywhere in the string
+        # Also check for if it is Discontinued or Cancelled as those are valid values for this attribute 
         if /(\d{4})/.match?(@launchStatus)
             @launchStatus = @launchStatus[/(\d{4})/].to_i
         elsif @launchStatus.eql?('Discontinued') || @launchStatus.eql?('Cancelled')
@@ -166,9 +167,9 @@ class Cell
         if @bodyDimensions.blank?
             @bodyDimensions = nil
         end
-
-        if /(\d+ [g])/.match?(@bodyWeight)
-            @bodyWeight = @bodyWeight[/(\d+ [g])/].to_f
+        # Regex to check for a number that may or may not have a decimal component with a space and a g afterwards for the body weight attribute
+        if /(\d+\.?\d* g)/.match?(@bodyWeight)
+            @bodyWeight = @bodyWeight[/(\d+\.?\d+ g)/].to_f
         else
             @bodyWeight = nil
         end
@@ -180,8 +181,8 @@ class Cell
         if @displayType.blank?
             @displayType = nil
         end
-
-        if /(\d*+\.?\d* \binches\b)/.match?(@displaySize)
+        # Use regex to check for a number followed by the inches word, then convert it to float to only have the numeric value
+        if /(\d+\.?\d* \binches\b)/.match?(@displaySize)
             @displaySize = @displaySize[/(\d+\.\d+ \binches\b)/].to_f
         else
             @displaySize = nil
@@ -190,11 +191,11 @@ class Cell
         if @displayResolution.blank? || @displayResolution.eql?('-')
             @displayResolution = nil
         end
-
+        # Regex to check if the feature sensors attribute only contains a number within it 
         if @featuresSensors.blank? || /(^[0-9.]+$)/.match?(@featuresSensors)
             @featuresSensors = nil
         end
-
+        # Regex to check if the platform os attribute only contains a number within it. If not, we take everything up to the first comma or the whole string if there is no comma for the attribute 
         if /(^\d*+\.?\d*$)/.match?(@platformOs) || @platformOs.blank?
             @platformOs = nil
         else
@@ -202,13 +203,21 @@ class Cell
         end
     end
 
+    # Method to print the attributes of the class as a string organized into a list
     def ToString()
         puts "OEM: #{@oem}\nModel: #{@model}\nAnnounced Launch Year: #{@launchAnnounced}\nReleased Year: #{@launchStatus}\nDimensions: #{@bodyDimensions}\nWeight: #{@bodyWeight}\nSim Card: #{@bodySim}\nDisplay Type: #{@displayType}\nDisplay Size: #{@displaySize}\nDisplay Resolution: #{@displayResolution}\nSensor Features: #{@featuresSensors}\nOS: #{@platformOs}"
     end
 
+    # Method to find the OEM that has the highest average weight for their phones
+    # Input Parameter: A hash of cell objects 
+    # Runtime: O(n^2) as we are iterating through the entirety of the cell hash and the entirety of the tempHash
+    # In the worst case scenario where each phone comes from a different oem, these lengths would be equal to one another, thus making the runtime O(n^2)
     def self.findHighestAverage(cellHash)
         tempHash = {}
         cellHash.each_key do |i|
+            # Make sure that neither the weight or the OEM are nil values, then check if the key(oem) exists within the hash
+            # If not, make new entry for OEM and store the weight and 1(count of phones from them)
+            # Otherwise, we add to the running body weight count and add 1 to the phone count before storing them back
             if !cellHash[i].getBodyWeight.nil? && !cellHash[i].getOEM.nil?
                 if tempHash.key?(cellHash[i].getOEM)
                     tempArray = tempHash.fetch(cellHash[i].getOEM)
@@ -222,6 +231,9 @@ class Cell
         end
         highestOEM = nil
         highestWeight = 0.0
+        # Iterate through the tempHash to calculate the average weight of each oems phones
+        # We also check if it is the highest average and store it in variables if so
+        # Regardless, we sotre the average weight along with the number of phones and average sum for printing of the raw data
         tempHash.each_key do |i|
             tempArray = tempHash[i]
             averageWeight = tempArray[0] / tempArray[1]
@@ -236,18 +248,30 @@ class Cell
         puts "The company with the highest average weight is #{highestOEM} at %0.2f g. average." % [highestWeight]
     end
 
+    # Method to find phones that were announced and released in two different years
+    # Input Parameter: A hash of cell objects 
+    # Runtime: O(n) as we are iterating through the entirety of the cell hash  
     def self.findDifferentYear(cellHash)
         cellHash.each_key do |i|
+            # Checking three conditions with this statement:
+                # 1. Check that the Announced year and the Launch Year are different
+                # 2. Check that both of these attributes are not nil values
+                # 3. Make sure that the launch status attribute isn't "Cancelled" or "Discontinued" as those don't count for these purposes
             if cellHash[i].getLaunchAnnounced != cellHash[i].getLaunchStatus && (cellHash[i].getLaunchAnnounced != nil && cellHash[i].getLaunchStatus != nil) && !(cellHash[i].getLaunchStatus.is_a?(String))
                 puts "OEM: " + cellHash[i].getOEM + ", Model: " + cellHash[i].getModel
             end
         end
     end
 
+    # Method to find phones that have only a single feature sensor
+    # Input Parameter: A hash of cell objects 
+    # Runtime: O(n) as we are iterating through the entirety of the cell hash  
     def self.findSingleFeature(cellHash)
         counter = 0
         cellHash.each_key do |i|
             if !cellHash[i].getFeaturesSensors.nil?
+                # If the feature sensor parameter has a comma in it, that means there is more than one sensor on the phone
+                # Thus, we use regex to check for a comma and only those without one count for this purpose
                 if !/([,])+/.match?(cellHash[i].getFeaturesSensors)
                     counter += 1
                 end
@@ -256,11 +280,22 @@ class Cell
         puts "There are #{counter} phones that have only one feature sensor."
     end
 
+    # Method to find the year after 1999 where the most phones released
+    # Input Parameter: A hash of cell objects 
+    # Runtime: O(nlogn) as we are first iterating through the entirety of the cell hash, then iterating through a subset of the cell hash (Phones released after 1999).
+    # So, in the worst case scenario where the two hashes are equal in length, the runtime is O(n^2). Although in this case, they can't be equal so the runtime is more like O(nlogn)
     def self.findMostLaunchedYear(cellHash)
         tempHash = {}
         cellHash.each_key do |i|
+            # Check to make sure both years are not nil and that the status doesn't equal "Cancelled"
             if (!(cellHash[i].getLaunchStatus.eql?("Cancelled")) && !(cellHash[i].getLaunchStatus.nil?) && !(cellHash[i].getLaunchAnnounced.nil?))
+                # Check to see if the launch status is "Discontinued and the announced year is past 1999"
+                # This assumes that discontinued phones count for the total for the year as it implies that they actually came out, just aren't available anymore
+                # This is different to cancelled as those phones never actually launched so they shouldn't count.
+                # For discontinued phones, we use the announced year for the purposes of the method
                 if cellHash[i].getLaunchStatus.eql?("Discontinued") && cellHash[i].getLaunchAnnounced > 1999
+                    # If the key already exists in the hash(which is the year), we fetch the value, add 1, and store the value
+                    # Otherwise, we use store to add the new key to the hash with an initial counter value of 1
                     if tempHash.key?(cellHash[i].getLaunchAnnounced)
                         counter = tempHash.fetch(cellHash[i].getLaunchAnnounced)
                         counter += 1
@@ -268,6 +303,8 @@ class Cell
                     else
                         tempHash.store(cellHash[i].getLaunchAnnounced, 1)
                     end
+                    # We have to check that the launch status is not discontinued here to make use of short-circuit evaluation
+                    # Otherwise, we end up with an error for attempting to compare a string against an integer number 
                 elsif !(cellHash[i].getLaunchStatus.eql?("Discontinued")) && cellHash[i].getLaunchStatus > 1999
                     if tempHash.key?(cellHash[i].getLaunchStatus)
                         counter = tempHash.fetch(cellHash[i].getLaunchStatus)
@@ -281,6 +318,8 @@ class Cell
         end
         highestNum = 0
         highestYear = 0
+        # We sort the hash by year by making use of the built in sort function, then convert it back to hash as that gives an array as output
+        # Then we iterate through to print the results and find the year with the most releases
         tempHash = tempHash.sort.to_h
         tempHash.each_key do |i|
             puts "Number of phones released in #{i} " + ": #{tempHash[i]}"
@@ -292,6 +331,9 @@ class Cell
         puts "The Year with the highest amount of phones launched was #{highestYear} at #{highestNum} phones."
     end
 
+    # Method to find the average/mean display size for all the phones in the data
+    # Input Parameter: A hash of cell objects 
+    # Runtime: O(n) as we are iterating through the entirety of the cell hash  
     def self.findMeanDisplaySize(cellHash)
         total = 0
         count = 0
@@ -305,6 +347,10 @@ class Cell
         puts "The Mean value of the phones display column is %0.2f inches." % [average]
     end
 
+    # Method to find the percent of cell objects in the data that do not contain a nil value from missing/invalid data 
+    # Input Parameter: A hash of cell objects 
+    # Runtime: O(n^2) as we are iterating through the entirety of the cell hash but the array include? function also iterates through the temp array using a for loop behind the scenes
+    # Since we are going through the whole cellHash, we end up with a double iteration for each element of it
     def self.returnNonNilPercent(cellHash)
         counter = 0.0
         cellHash.each_key do |i|
@@ -327,7 +373,7 @@ end
 Cells = {}
 
 # Iterate through the CSV Table structure to sanitize data and put into hashmap
-
+# Runtime: O(n) as we are iterating through the whole table of data and none of the inner lines of code are worse than O(1)
 cellInfo.each_with_index do |row, i|
     tempCell = Cell.new(row['oem'], row['model'], row['launch_announced'], row['launch_status'], row['body_dimensions'], row['body_weight'], row['body_sim'], row['display_type'], row['display_size'], row['display_resolution'], row['features_sensors'], row['platform_os'])
     tempCell.sanitizeData
@@ -347,11 +393,11 @@ Cell.findSingleFeature(Cells)
 puts "\nFinding year after 1999 with most phone launches\n"
 Cell.findMostLaunchedYear(Cells)
 
-puts "\n"
+puts "\nPrinting Random Cell Data"
 Cells[rand(1000)].ToString
 
-puts "\n"
+puts "\nFinding the Mean of the Display Size Column"
 Cell.findMeanDisplaySize(Cells)
 
-puts "\n"
+puts "\nFinding how many rows include no nil values from data cleanup"
 Cell.returnNonNilPercent(Cells)
