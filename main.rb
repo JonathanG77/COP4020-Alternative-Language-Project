@@ -225,7 +225,10 @@ class Cell
                 highestWeight = averageWeight
                 highestOEM = i
             end
+        tempHash.store(i, [tempArray[0], tempArray[1], averageWeight])
         end
+        puts "Raw Data: \n"
+        puts tempHash
         puts "The company with the highest average weight is #{highestOEM} at %0.2f g. average." % [highestWeight]
     end
 
