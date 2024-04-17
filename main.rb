@@ -45,8 +45,8 @@ class Cell
     end
 
     # Setter method for launch date variable
-    def setLaunchDate=(launchDate)
-        @launchDate = launchDate
+    def setLaunchAnnounced=(launchAnnounced)
+        @launchAnnounced = launchAnnounced
     end
 
     # Getter method for launch status variable
@@ -187,7 +187,7 @@ class Cell
             @displaySize = nil
         end
 
-        if @displayResolution.blank?
+        if @displayResolution.blank? || @displayResolution.eql?('-')
             @displayResolution = nil
         end
 
@@ -200,6 +200,10 @@ class Cell
         else
             @platformOs = @platformOs[/([^,])+/]
         end
+    end
+
+    def ToString()
+        puts "OEM: #{@oem}\nModel: #{@model}\nAnnounced Launch Year: #{@launchAnnounced}\nReleased Year: #{@launchStatus}\nDimensions: #{@bodyDimensions}\nWeight: #{@bodyWeight}\nSim Card: #{@bodySim}\nDisplay Type: #{@displayType}\nDisplay Size: #{@displaySize}\nDisplay Resolution: #{@displayResolution}\nSensor Features: #{@featuresSensors}\nOS: #{@platformOs}"
     end
 
     def self.findHighestAverage(cellHash)
@@ -287,6 +291,31 @@ class Cell
         end
         puts "The Year with the highest amount of phones launched was #{highestYear} at #{highestNum} phones."
     end
+
+    def self.findMeanDisplaySize(cellHash)
+        total = 0
+        count = 0
+        cellHash.each_key do |i|
+            if !cellHash[i].getDisplaySize.nil?
+                total += cellHash[i].getDisplaySize
+                count += 1
+            end
+        end
+        average = total/count
+        puts "The Mean value of the phones display column is %0.2f inches." % [average]
+    end
+
+    def self.returnNonNilPercent(cellHash)
+        counter = 0.0
+        cellHash.each_key do |i|
+            tempArray = [cellHash[i].getOEM, cellHash[i].getModel, cellHash[i].getLaunchAnnounced, cellHash[i].getLaunchStatus, cellHash[i].getBodyDimensions, cellHash[i].getBodyWeight, cellHash[i].getBodySim, cellHash[i].getDisplayType, cellHash[i].getDisplaySize, cellHash[i].getDisplayResolution, cellHash[i].getFeaturesSensors, cellHash[i].getPlatformOS]
+            if !tempArray.include?(nil)
+                counter += 1
+            end
+        end
+        percent = counter / cellHash.length * 100
+        puts "Precentage of data that does not have a nil value: %0.0f%%" % [percent]
+    end
 end
 
 if File.zero?('cells.csv')
@@ -317,3 +346,12 @@ Cell.findSingleFeature(Cells)
 
 puts "\nFinding year after 1999 with most phone launches\n"
 Cell.findMostLaunchedYear(Cells)
+
+puts "\n"
+Cells[rand(1000)].ToString
+
+puts "\n"
+Cell.findMeanDisplaySize(Cells)
+
+puts "\n"
+Cell.returnNonNilPercent(Cells)
