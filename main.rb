@@ -203,7 +203,30 @@ class Cell
     end
 
     def self.findHighestAverage(cellHash)
-
+        tempHash = {}
+        cellHash.each_key do |i|
+            if !cellHash[i].getBodyWeight.nil? && !cellHash[i].getOEM.nil?
+                if tempHash.key?(cellHash[i].getOEM)
+                    tempArray = tempHash.fetch(cellHash[i].getOEM)
+                    tempArray[0] += cellHash[i].getBodyWeight
+                    tempArray[1] += 1 
+                    tempHash.store(cellHash[i].getOEM,[tempArray[0], tempArray[1]])
+                else
+                    tempHash.store(cellHash[i].getOEM,[cellHash[i].getBodyWeight, 1])
+                end
+            end
+        end
+        highestOEM = nil
+        highestWeight = 0.0
+        tempHash.each_key do |i|
+            tempArray = tempHash[i]
+            averageWeight = tempArray[0] / tempArray[1]
+            if averageWeight > highestWeight
+                highestWeight = averageWeight
+                highestOEM = i
+            end
+        end
+        puts "The company with the highest average weight is #{highestOEM} at %0.2f g. average." % [highestWeight]
     end
 
     def self.findDifferentYear(cellHash)
@@ -265,4 +288,4 @@ cellInfo.each_with_index do |row, i|
     Cells.store(i, tempCell)
 end
 
-Cell.findMostLaunchedYear(Cells)
+Cell.findHighestAverage(Cells)
