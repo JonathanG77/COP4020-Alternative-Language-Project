@@ -241,7 +241,15 @@ class Cell
     end
 
     def self.findSingleFeature(cellHash)
-
+        counter = 0
+        cellHash.each_key do |i|
+            if !cellHash[i].getFeaturesSensors.nil?
+                if !/([,])+/.match?(cellHash[i].getFeaturesSensors)
+                    counter += 1
+                end
+            end
+        end
+        puts "There are #{counter} phones that have only one feature sensor."
     end
 
     def self.findMostLaunchedYear(cellHash)
@@ -291,4 +299,4 @@ cellInfo.each_with_index do |row, i|
     Cells.store(i, tempCell)
 end
 
-Cell.findHighestAverage(Cells)
+Cell.findSingleFeature(Cells)
