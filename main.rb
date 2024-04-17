@@ -1,3 +1,13 @@
+require 'bundler/inline'
+
+# This is for repl.it users
+# It will install the needed external library "activesupport" that is needed for the blank? function to work
+# Unfortunately, thts results in a very long first run regardless if the gem is already installed and increased runtime for every run after that as it checks to make sure the gem is installed.
+gemfile true do 
+    source 'http://rubygems.org'
+    gem 'activesupport'
+end
+
 require 'csv'
 require 'active_support'
 require 'active_support/core_ext/object'

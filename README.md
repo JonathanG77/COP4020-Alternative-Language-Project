@@ -31,6 +31,8 @@ I did not use many external libraries in this program, so this section will list
 
 3. [Test::Unit](https://ruby-doc.org/stdlib-3.1.0/libdoc/test-unit/rdoc/Test/Unit.html): Included within the standard library, this library gives support for unit tests within the function. As may be obvious from the name, I mainly used this in order to create and run unit tests throughout the program. I chose this as my way to do unit tests as it is included within the standard library and thus needed no additional installs.
 
+4. [Bundler/Inline](https://bundler.io/docs.html): Included with installs of Ruby, bundler allows for the installation and maintaining of extensions and add-ons called Gems. This is used in the program in order to make sure that the Active Support gem and its dependencies are installed. This is mainly used to ensure support with replit where this program is being ran, but it also allows for any ruby IDE to run it without needing to install gems before hand. This comes at a cost of massively increased runtime on first run and a noticable delay on future runs afterwards.
+
 ## Answer to Questions
 - What company (oem) has the highest average weight of phone body?
 ![Answer to average weight question](Images/WeightAnswer.png)
