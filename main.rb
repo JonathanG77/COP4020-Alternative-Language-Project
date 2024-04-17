@@ -275,10 +275,17 @@ class Cell
                 end
             end
         end
+        highestNum = 0
+        highestYear = 0
         tempHash = tempHash.sort.to_h
         tempHash.each_key do |i|
             puts "Number of phones released in #{i} " + ": #{tempHash[i]}"
+            if tempHash[i] > highestNum
+                highestNum = tempHash[i]
+                highestYear = i
+            end
         end
+        puts "The Year with the highest amount of phones launched was #{highestYear} at #{highestNum} phones."
     end
 end
 
@@ -299,4 +306,14 @@ cellInfo.each_with_index do |row, i|
     Cells.store(i, tempCell)
 end
 
+puts "Finding Highest Average Weight\n"
+Cell.findHighestAverage(Cells)
+
+puts "\nFinding difference between anounced and released years\n"
+Cell.findDifferentYear(Cells)
+
+puts "\nFinding phones with a single feature\n"
 Cell.findSingleFeature(Cells)
+
+puts "\nFinding year after 1999 with most phone launches\n"
+Cell.findMostLaunchedYear(Cells)
