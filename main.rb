@@ -141,11 +141,11 @@ class Cell
 
     # Method to sanitize the data for input into HashMap
     def sanitizeData()
-        if @oem.blank?
+        if @oem.blank? || @oem.eql?('-')
             @oem = nil
         end
 
-        if @model.blank?
+        if @model.blank? || @model.eql?('-')
             @model = nil
         end
         # Use a regex expression to check if the announced launch date string contains a year in it. This expression matches 4 digits anywhere in the string
@@ -164,7 +164,7 @@ class Cell
             @launchStatus = nil
         end
 
-        if @bodyDimensions.blank?
+        if @bodyDimensions.blank? || @bodyDimensions.eql?('-')
             @bodyDimensions = nil
         end
         # Regex to check for a number that may or may not have a decimal component with a space and a g afterwards for the body weight attribute
@@ -174,11 +174,11 @@ class Cell
             @bodyWeight = nil
         end
 
-        if @bodySim.blank? || @bodySim.eql?('No') || @bodySim.eql?('Yes')
+        if @bodySim.blank? || @bodySim.eql?('No') || @bodySim.eql?('Yes') || @bodySim.eql?('-')
             @bodySim = nil
         end
 
-        if @displayType.blank?
+        if @displayType.blank? || @displayType.eql?('-')
             @displayType = nil
         end
         # Use regex to check for a number followed by the inches word, then convert it to float to only have the numeric value
@@ -196,7 +196,7 @@ class Cell
             @featuresSensors = nil
         end
         # Regex to check if the platform os attribute only contains a number within it. If not, we take everything up to the first comma or the whole string if there is no comma for the attribute 
-        if /(^\d*+\.?\d*$)/.match?(@platformOs) || @platformOs.blank?
+        if /(^\d*+\.?\d*$)/.match?(@platformOs) || @platformOs.blank? || @platformOs.eql?('-')
             @platformOs = nil
         else
             @platformOs = @platformOs[/([^,])+/]
