@@ -152,7 +152,7 @@ class Cell
         if /(\d{4})/.match?(@launchAnnounced)
             @launchAnnounced = @launchAnnounced[/(\d{4})/].to_i
         else
-            @launch_announced = nil
+            @launchAnnounced = nil
         end
         
         if /(\d{4})/.match?(@launchStatus)
@@ -160,7 +160,7 @@ class Cell
         elsif @launchStatus.eql?('Discontinued') || @launchStatus.eql?('Cancelled')
             @launchStatus = @launchStatus
         else
-            @launch_announced = nil
+            @launchStatus = nil
         end
 
         if @bodyDimensions.blank?
@@ -219,7 +219,29 @@ class Cell
     end
 
     def self.findMostLaunchedYear(cellHash)
-
+        tempHash = {}
+        cellHash.each_key do |i|
+            if (!(cellHash[i].getLaunchStatus.eql?("Cancelled")) && !(cellHash[i].getLaunchStatus.nil?) && !(cellHash[i].getLaunchAnnounced.nil?))
+                if cellHash[i].getLaunchStatus.eql?("Discontinued") && cellHash[i].getLaunchAnnounced > 1999
+                    if tempHash.key?(cellHash[i].getLaunchAnnounced)
+                        counter = tempHash.fetch(cellHash[i].getLaunchAnnounced)
+                        counter += 1
+                        tempHash.store(cellHash[i].getLaunchAnnounced, counter)
+                    else
+                        tempHash.store(cellHash[i].getLaunchAnnounced, 1)
+                    end
+                elsif !(cellHash[i].getLaunchStatus.eql?("Discontinued")) && cellHash[i].getLaunchStatus > 1999
+                    if tempHash.key?(cellHash[i].getLaunchStatus)
+                        counter = tempHash.fetch(cellHash[i].getLaunchStatus)
+                        counter += 1
+                        tempHash.store(cellHash[i].getLaunchStatus, counter)
+                    else
+                        tempHash.store(cellHash[i].getLaunchStatus, 1)
+                    end
+                end
+            end
+        end
+        puts tempHash
     end
 end
 
@@ -240,4 +262,4 @@ cellInfo.each_with_index do |row, i|
     Cells.store(i, tempCell)
 end
 
-Cell.findDifferentYear(Cells)
+Cell.findMostLaunchedYear(Cells)
